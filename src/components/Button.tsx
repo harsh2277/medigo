@@ -194,13 +194,16 @@ export const Button: React.FC<ButtonProps> = ({
     return (fontFamily as any)[weightKey] || fontFamily.semiBold;
   };
 
+  const hasCustomBg = classList.some((c) => c.startsWith('bg-'));
+  const finalBg = hasCustomBg ? bg.split(' ').filter(c => !c.startsWith('bg-')).join(' ') : bg;
+
   return (
     <Pressable
       disabled={disabled || isLoading}
       style={({ pressed }) => [
         pressed && { transform: [{ scale: 0.97 }], opacity: 0.85 }
       ]}
-      className={`${baseClasses} ${sizeClasses[size]} ${bg} ${
+      className={`${baseClasses} ${sizeClasses[size]} ${finalBg} ${
         disabled ? 'opacity-40' : 'opacity-100'
       } ${customPressableClasses}`}
       {...props}

@@ -13,12 +13,12 @@ import { HugeiconsIcon } from "@hugeicons/react-native";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 
 interface OtpScreenProps {
-  email?: string;
+  phone?: string;
   onBack: () => void;
   onVerifySuccess: () => void;
 }
 
-export default function OtpScreen({ email = "your email", onBack, onVerifySuccess }: OtpScreenProps) {
+export default function OtpScreen({ phone = "your mobile number", onBack, onVerifySuccess }: OtpScreenProps) {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
@@ -86,12 +86,12 @@ export default function OtpScreen({ email = "your email", onBack, onVerifySucces
               Verification Code
             </AppText>
             <AppText weight="regular" className="text-[16px] text-neutral-500 leading-[24px]">
-              We've sent a 4-digit verification code to <AppText weight="bold" className="text-neutral-800">{email}</AppText>. Please enter it below.
+            We've sent a 4-digit verification code to <AppText weight="bold" className="text-neutral-800">{phone}</AppText>. Please enter it below.
             </AppText>
           </View>
 
           {/* OTP Input Fields */}
-          <View className="items-center gap-6 mb-8">
+          <View className="gap-6 mb-8">
             <OtpInput
               length={4}
               value={otp}
@@ -103,7 +103,7 @@ export default function OtpScreen({ email = "your email", onBack, onVerifySucces
             />
 
             {/* Resend Timer */}
-            <View className="items-center justify-center">
+            <View className="self-start">
               {countdown > 0 ? (
                 <AppText weight="regular" className="text-[14px] text-neutral-400">
                   Resend code in <AppText weight="semiBold" className="text-secondary-500">{countdown}s</AppText>

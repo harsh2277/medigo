@@ -7,8 +7,9 @@ import { colors } from "../src/constants/colors";
 import OnboardingScreen from "../src/screens/Auth/OnboardingScreen";
 import LoginScreen from "../src/screens/Auth/LoginScreen";
 import PhoneLoginScreen from "../src/screens/Auth/PhoneLoginScreen";
+import SignInScreen from "../src/screens/Auth/SignInScreen";
 import RegisterScreen from "../src/screens/Auth/RegisterScreen";
-import ForgotPasswordScreen from "../src/screens/Auth/ForgotPasswordScreen";
+
 import OtpScreen from "../src/screens/Auth/OtpScreen";
 import HomeScreen from "../src/screens/Home/HomeScreen";
 
@@ -46,8 +47,8 @@ type ViewState =
   | "onboarding"
   | "login"
   | "phone-login"
+  | "sign-in"
   | "register"
-  | "forgot-password"
   | "otp"
   | "home"
   | "medicines-list"
@@ -169,30 +170,32 @@ export default function AppEntry() {
           }}
         />
       );
+    case "sign-in":
+      return (
+        <SignInScreen
+          onBack={() => navigateTo("login")}
+          onSendOtp={(phone) => {
+            setEmail(phone);
+            navigateTo("otp");
+          }}
+          onRegister={() => navigateTo("register")}
+        />
+      );
     case "register":
       return (
         <RegisterScreen
-          onLogin={() => navigateTo("login")}
+          onLogin={() => navigateTo("sign-in")}
           onRegisterSuccess={(userEmail) => {
             setEmail(userEmail);
             navigateTo("otp");
           }}
         />
       );
-    case "forgot-password":
-      return (
-        <ForgotPasswordScreen
-          onBack={() => navigateTo("login")}
-          onResetSuccess={(userEmail) => {
-            setEmail(userEmail);
-            navigateTo("otp");
-          }}
-        />
-      );
+
     case "otp":
       return (
         <OtpScreen
-          email={email}
+          phone={email}
           onBack={() => navigateTo(previousView)}
           onVerifySuccess={() => navigateTo("home")}
         />

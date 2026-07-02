@@ -20,14 +20,14 @@ interface RegisterScreenProps {
 export default function RegisterScreen({ onLogin, onRegisterSuccess }: RegisterScreenProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [agree, setAgree] = useState(false);
   const [errors, setErrors] = useState<{
     name?: string;
     email?: string;
+    phone?: string;
     password?: string;
-    confirmPassword?: string;
     agree?: string;
   }>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -40,15 +40,15 @@ export default function RegisterScreen({ onLogin, onRegisterSuccess }: RegisterS
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = "Please enter a valid email address";
     }
+    if (!phone) {
+      newErrors.phone = "Phone number is required";
+    } else if (phone.length < 8) {
+      newErrors.phone = "Please enter a valid phone number";
+    }
     if (!password) {
       newErrors.password = "Password is required";
     } else if (password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
-    }
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Confirm password is required";
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
     }
     if (!agree) {
       newErrors.agree = "You must agree to the Terms of Service";
@@ -63,7 +63,7 @@ export default function RegisterScreen({ onLogin, onRegisterSuccess }: RegisterS
       // Simulate API call
       setTimeout(() => {
         setIsLoading(false);
-        onRegisterSuccess(email);
+        onRegisterSuccess(phone);
       }, 1500);
     }
   };
@@ -122,6 +122,18 @@ export default function RegisterScreen({ onLogin, onRegisterSuccess }: RegisterS
             />
 
             <Input
+              label="Phone Number"
+              placeholder="98765 43210"
+              value={phone}
+              onChangeText={(text) => {
+                setPhone(text.replace(/[^0-9]/g, ""));
+                if (errors.phone) setErrors({ ...errors, phone: undefined });
+              }}
+              error={errors.phone}
+              keyboardType="phone-pad"
+            />
+
+            <Input
               label="Password"
               placeholder="Min 6 characters"
               value={password}
@@ -130,22 +142,6 @@ export default function RegisterScreen({ onLogin, onRegisterSuccess }: RegisterS
                 if (errors.password) setErrors({ ...errors, password: undefined });
               }}
               error={errors.password}
-              leftIcon={
-                <HugeiconsIcon icon={LockIcon} size={20} color={colors.neutral[400]} />
-              }
-              isPassword
-            />
-
-            <Input
-              label="Confirm Password"
-              placeholder="Re-enter password"
-              value={confirmPassword}
-              onChangeText={(text) => {
-                setConfirmPassword(text);
-                if (errors.confirmPassword)
-                  setErrors({ ...errors, confirmPassword: undefined });
-              }}
-              error={errors.confirmPassword}
               leftIcon={
                 <HugeiconsIcon icon={LockIcon} size={20} color={colors.neutral[400]} />
               }

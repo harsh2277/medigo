@@ -27,7 +27,7 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       {!isSplashReady ? (
         <View style={styles.container}>
           <Image

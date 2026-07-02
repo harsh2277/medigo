@@ -5,23 +5,24 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../../constants/colors";
-import { Button, AppText, Input } from "../../components";
+import { Input, Button, AppText } from "../../components";
 import { HugeiconsIcon } from "@hugeicons/react-native";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 
-interface PhoneLoginScreenProps {
+interface SignInScreenProps {
   onBack: () => void;
   onSendOtp: (phone: string) => void;
+  onRegister: () => void;
 }
 
-export default function PhoneLoginScreen({
+export default function SignInScreen({
   onBack,
   onSendOtp,
-}: PhoneLoginScreenProps) {
+  onRegister,
+}: SignInScreenProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState<string | undefined>();
 
@@ -35,7 +36,7 @@ export default function PhoneLoginScreen({
       return;
     }
     setError(undefined);
-    onSendOtp("+91 " + phoneNumber);
+    onSendOtp(phoneNumber);
   };
 
   return (
@@ -62,17 +63,17 @@ export default function PhoneLoginScreen({
             {/* Header */}
             <View className="mb-9">
               <AppText weight="bold" className="text-[32px] text-neutral-900 mb-3 leading-[38px]">
-                Enter Mobile Number
+                Sign In
               </AppText>
               <AppText weight="regular" className="text-[16px] text-neutral-400">
-                We'll send you a verification code
+                Enter your mobile number to receive an OTP
               </AppText>
             </View>
 
-            {/* Input Container */}
+            {/* Phone Number Input */}
             <View className="mb-4">
               <Input
-                label="Mobile Number"
+                label="Phone Number"
                 placeholder="98765 43210"
                 value={phoneNumber}
                 onChangeText={(text) => {
@@ -86,7 +87,7 @@ export default function PhoneLoginScreen({
           </View>
 
           {/* Sticky Bottom Action */}
-          <View className="mt-auto">
+          <View className="mt-auto gap-6">
             <Button
               title="Send OTP"
               variant="primary"
@@ -94,9 +95,21 @@ export default function PhoneLoginScreen({
               onPress={handleSend}
               className="w-full"
             />
+
+            <View className="flex-row justify-center items-center">
+              <AppText weight="regular" className="text-[15px] text-neutral-500">
+                New user?{" "}
+              </AppText>
+              <TouchableOpacity onPress={onRegister}>
+                <AppText weight="bold" className="text-[15px] text-secondary-500">
+                  Register
+                </AppText>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
+

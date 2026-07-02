@@ -43,13 +43,13 @@ interface LoginScreenProps {
 export default function LoginScreen({ onRegister, onLoginSuccess, onPhoneLogin }: LoginScreenProps) {
   return (
     <View className="flex-1 bg-white">
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
 
       {/* Top Teal Container */}
       <View className="flex-1 bg-secondary-500 rounded-b-[40px] items-center pt-[60px] relative overflow-hidden">
         {/* Logo and App name header */}
         <View className="flex-row items-center gap-2 z-10">
-          <AppText weight="black" className="text-[26px] text-white tracking-[0.5px]">
+          <AppText weight="semiBold" className="text-[26px] text-white tracking-[0.5px]">
             MediGo
           </AppText>
         </View>
@@ -97,6 +97,8 @@ export default function LoginScreen({ onRegister, onLoginSuccess, onPhoneLogin }
             onPress={onPhoneLogin}
             className="w-full"
           />
+
+
         </View>
 
         {/* Register Footer */}
