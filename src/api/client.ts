@@ -38,7 +38,7 @@ export async function invoke<T>(
     throw new Error(error.message || 'An unexpected error occurred');
   }
 
-  if (\!data) {
+  if (!data) {
     throw new Error('Empty response from server');
   }
 

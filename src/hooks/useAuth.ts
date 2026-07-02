@@ -10,7 +10,7 @@ export const useAuth = () => {
     isLoading,
     isInitialized,
     error,
-    isAuthenticated: \!\!session,
+    isAuthenticated: !!session,
     login,
     register,
     logout,

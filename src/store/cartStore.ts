@@ -55,7 +55,7 @@ export const useCartStore = create<CartStore>((set, get) => ({
 
   removeItem: (medicine_id) =>
     set((state) => ({
-      items: state.items.filter((i) => i.medicine_id \!== medicine_id),
+      items: state.items.filter((i) => i.medicine_id !== medicine_id),
     })),
 
   updateQuantity: (medicine_id, quantity) => {

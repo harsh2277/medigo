@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, Text, ActivityIndicator, View, PressableProps } from 'react-native';
+import { fontFamily } from '../constants/fonts';
 
 export interface ButtonProps extends Omit<PressableProps, 'children'> {
   title?: string;
@@ -164,6 +165,35 @@ export const Button: React.FC<ButtonProps> = ({
     lg: 'text-lg font-bold',
   };
 
+  // Split and extract text/font specific classes to pass to the inner Text component
+  const classList = className ? className.split(' ') : [];
+  const textSpecificClasses = classList.filter(
+    (c) => c.startsWith('text-') || c.startsWith('font-')
+  );
+  const pressableClasses = classList.filter(
+    (c) => !c.startsWith('text-') && !c.startsWith('font-')
+  );
+
+  const customTextClasses = textSpecificClasses.join(' ');
+  const customPressableClasses = pressableClasses.join(' ');
+  const hasCustomColor = textSpecificClasses.some((c) => c.startsWith('text-'));
+
+  const getFontFamily = () => {
+    const fontClass = textSpecificClasses.find((c) => c.startsWith('font-'));
+    const resolvedFont = fontClass ? fontClass.replace('font-', '') : '';
+    
+    // Default fallback based on size
+    const defaultWeight = size === 'lg' ? 'bold' : 'semiBold';
+    const weightKey = resolvedFont || defaultWeight;
+
+    // Normalise casing differences (e.g. semibold in css, semiBold in fonts.ts)
+    if (weightKey === 'semibold') return fontFamily.semiBold;
+    if (weightKey === 'extrabold') return fontFamily.extraBold;
+    if (weightKey === 'extralight') return fontFamily.extraLight;
+
+    return (fontFamily as any)[weightKey] || fontFamily.semiBold;
+  };
+
   return (
     <Pressable
       disabled={disabled || isLoading}
@@ -172,7 +202,7 @@ export const Button: React.FC<ButtonProps> = ({
       ]}
       className={`${baseClasses} ${sizeClasses[size]} ${bg} ${
         disabled ? 'opacity-40' : 'opacity-100'
-      } ${className}`}
+      } ${customPressableClasses}`}
       {...props}
     >
       {isLoading ? (
@@ -184,7 +214,10 @@ export const Button: React.FC<ButtonProps> = ({
       ) : (
         <>
           {leftIcon && <View className="mr-2">{leftIcon}</View>}
-          <Text className={`text-center font-sans ${text} ${textSize[size]}`}>
+          <Text
+            style={{ fontFamily: getFontFamily() }}
+            className={`text-center ${hasCustomColor ? customTextClasses : text}`}
+          >
             {title}
           </Text>
           {rightIcon && <View className="ml-2">{rightIcon}</View>}
