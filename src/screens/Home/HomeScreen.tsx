@@ -1,22 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   ScrollView,
   TouchableOpacity,
   Image,
   Dimensions,
-  TextInput,
-  FlatList,
+  Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AppText, StatusBadge, Button } from "../../components";
+import { AppText, StatusBadge, Button, SearchBar } from "../../components";
 import { HugeiconsIcon } from "@hugeicons/react-native";
 import {
   ArrowRight01Icon,
-  Search01Icon,
   Location01Icon,
   ShoppingCart01Icon,
-  ArrowDown01Icon,
 } from "@hugeicons/core-free-icons";
 
 // Custom SVG components for the new bottom nav bar
@@ -192,7 +189,7 @@ export default function HomeScreen({
   ];
 
   // Helper to render current active tab screen body
-  const renderTabContent = () => {
+  const renderTabContent = (animScrollY: Animated.Value) => {
     switch (activeTab) {
       case "Categories":
         return (
@@ -253,52 +250,17 @@ export default function HomeScreen({
       case "Home":
       default:
         return (
-          <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-            {/* Services Row Grid */}
-            <View className="flex-row px-6 gap-4 mb-6">
-              {/* Lab Tests */}
-              <TouchableOpacity
-                onPress={onNavigateToLabTests}
-                activeOpacity={0.9}
-                className="flex-1 border-2 border-orange-100 bg-white rounded-3xl p-4 shadow-sm relative overflow-hidden"
-              >
-                <AppText weight="black" className="text-[16px] text-neutral-900 mb-1">
-                  Lab Tests
-                </AppText>
-                <AppText weight="medium" className="text-[11px] text-neutral-400 mb-2">
-                  Book from home
-                </AppText>
-                <View className="bg-orange-500 rounded-lg py-1 px-2 self-start mb-2">
-                  <AppText weight="bold" className="text-[9px] text-white">Buy 1 - Get 1 Free</AppText>
-                </View>
-                <View className="absolute bottom-2 right-2 opacity-10">
-                  <CustomLabTestIcon active />
-                </View>
-              </TouchableOpacity>
-
-              {/* Medicines */}
-              <TouchableOpacity
-                onPress={onNavigateToMedicines}
-                activeOpacity={0.9}
-                className="flex-1 border-2 border-orange-100 bg-white rounded-3xl p-4 shadow-sm relative overflow-hidden"
-              >
-                <AppText weight="black" className="text-[16px] text-neutral-900 mb-1">
-                  Medicines
-                </AppText>
-                <AppText weight="medium" className="text-[11px] text-neutral-400 mb-2">
-                  Fastest delivery
-                </AppText>
-                <View className="bg-orange-500 rounded-lg py-1 px-2 self-start mb-2">
-                  <AppText weight="bold" className="text-[9px] text-white">Extra Rx.30 OFF</AppText>
-                </View>
-                <View className="absolute bottom-2 right-2 opacity-10">
-                  <CustomCategoriesIcon active />
-                </View>
-              </TouchableOpacity>
-            </View>
-
+          <Animated.ScrollView
+            showsVerticalScrollIndicator={false}
+            className="flex-1"
+            scrollEventThrottle={16}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: animScrollY } } }],
+              { useNativeDriver: false }
+            )}
+          >
             {/* Promo Banner on Green background */}
-            <View className="px-6 mb-6">
+            <View className="px-6 mb-6 pt-6">
               <View className="bg-[#00B4D8] rounded-[24px] p-5 flex-row justify-between items-center overflow-hidden relative">
                 <View className="flex-1 pr-2 z-10">
                   <AppText weight="black" className="text-white text-[20px] mb-1">
@@ -437,53 +399,238 @@ export default function HomeScreen({
                 </AppText>
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </Animated.ScrollView>
         );
     }
   };
+  // --- Scroll-driven animated header ---
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const THRESHOLD = 70;
+
+  const locationOpacity = scrollY.interpolate({
+    inputRange: [0, THRESHOLD * 0.8],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+  const locationHeight = scrollY.interpolate({
+    inputRange: [0, THRESHOLD],
+    outputRange: [60, 0],
+    extrapolate: "clamp",
+  });
+  const cardsOpacity = scrollY.interpolate({
+    inputRange: [0, THRESHOLD * 0.6],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+  const cardsHeight = scrollY.interpolate({
+    inputRange: [0, THRESHOLD],
+    outputRange: [107, 0],
+    extrapolate: "clamp",
+  });
+  const compactCartOpacity = scrollY.interpolate({
+    inputRange: [THRESHOLD * 0.5, THRESHOLD],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+  const compactCartWidth = scrollY.interpolate({
+    inputRange: [THRESHOLD * 0.5, THRESHOLD],
+    outputRange: [0, 56],
+    extrapolate: "clamp",
+  });
+  const searchPaddingBottom = scrollY.interpolate({
+    inputRange: [0, THRESHOLD],
+    outputRange: [16, 14],
+    extrapolate: "clamp",
+  });
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
-      {/* Location header bar */}
-      <View className="flex-row justify-between items-center px-6 py-3 border-b border-neutral-50 bg-white">
-        <View className="flex-row items-center gap-1.5">
-          <HugeiconsIcon icon={Location01Icon} size={16} color="#FF7E3E" />
-          <AppText weight="bold" className="text-[14px] text-neutral-800">
-            Bangalore, Karnataka
-          </AppText>
-          <HugeiconsIcon icon={ArrowDown01Icon} size={12} color="#1F2937" />
-        </View>
-
-        <TouchableOpacity
-          onPress={onNavigateToNotifications}
-          className="w-10 h-10 rounded-full bg-slate-50 items-center justify-center relative"
+      {/* Header — animates between expanded and compact on scroll */}
+      <View
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          borderBottomWidth: 1,
+          borderColor: "#E9ECEF",
+          borderBottomLeftRadius: 34,
+          borderBottomRightRadius: 34,
+          overflow: "hidden",
+        }}
+      >
+        {/* Location row — animates out on scroll */}
+        <Animated.View
+          style={{
+            opacity: locationOpacity,
+            height: locationHeight,
+            overflow: "hidden",
+          }}
         >
-          <HugeiconsIcon icon={ShoppingCart01Icon} size={20} color="#1F2937" />
-          {cartCount > 0 && (
-            <View className="absolute -top-1 -right-1 bg-[#FF7E3E] rounded-full w-5 h-5 items-center justify-center border border-white">
-              <AppText weight="bold" className="text-[10px] text-white">
-                {cartCount}
+          <View className="flex-row justify-between items-center px-4 pt-4">
+            <View className="flex-row items-center gap-2">
+              <HugeiconsIcon icon={Location01Icon} size={18} color="#FF7E3E" />
+              <AppText weight="bold" className="text-[16px] text-[#1A1A1A]">
+                Bangalore, Karnataka
               </AppText>
             </View>
-          )}
-        </TouchableOpacity>
-      </View>
+          </View>
+        </Animated.View>
 
-      {/* Search Input bar */}
-      <View className="px-6 py-3 bg-white">
-        <View className="flex-row items-center bg-slate-50 border border-neutral-100 rounded-full px-5 h-12">
-          <HugeiconsIcon icon={Search01Icon} size={18} color="#9CA3AF" className="mr-3" />
-          <TextInput
-            placeholder="Search for medicines, lab tests..."
-            placeholderTextColor="#9CA3AF"
-            editable={false}
-            className="flex-1 text-[13px] font-sans text-neutral-800"
-          />
-        </View>
+        {/* Search row — always visible; compact cart fades in on scroll */}
+        <Animated.View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: searchPaddingBottom,
+          }}
+        >
+          {/* Search bar — flex-1 */}
+          <View style={{ flex: 1 }}>
+            <SearchBar
+              placeholder="Search for medicines, lab tests..."
+              editable={false}
+              disabled={false}
+            />
+          </View>
+
+          {/* Compact cart button — slides in from right on scroll */}
+          <Animated.View
+            style={{
+              opacity: compactCartOpacity,
+              width: compactCartWidth,
+              overflow: "hidden",
+              alignItems: "flex-end",
+            }}
+          >
+            <TouchableOpacity
+              onPress={onNavigateToNotifications}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: "#F8F9FA",
+                borderWidth: 1,
+                borderColor: "#E9ECEF",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+              }}
+            >
+              <HugeiconsIcon icon={ShoppingCart01Icon} size={20} color="#1A1A1A" />
+              <View
+                style={{
+                  position: "absolute",
+                  top: 2,
+                  right: 2,
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: "#FF7E3E",
+                }}
+              />
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
+
+        {/* Cards row — animates out on scroll */}
+        <Animated.View
+          style={{
+            opacity: cardsOpacity,
+            height: cardsHeight,
+            overflow: "hidden",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              paddingHorizontal: 16,
+              gap: 12,
+              paddingBottom: 16,
+            }}
+          >
+            {/* Lab Tests */}
+            <TouchableOpacity
+              onPress={onNavigateToLabTests}
+              activeOpacity={0.9}
+              style={{
+                flex: 1,
+                backgroundColor: "#FF7E3E",
+                borderRadius: 17,
+                padding: 2,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 16,
+                  paddingTop: 6,
+                  paddingLeft: 12,
+                  paddingRight: 6,
+                  paddingBottom: 0,
+                  overflow: "hidden",
+                }}
+              >
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <View style={{ flex: 1 }}>
+                    <AppText weight="bold" className="text-[14px] text-[#1A1A1A]">Lab Tests</AppText>
+                    <AppText weight="medium" className="text-[11px] text-[#6B7280] mt-1">Book from home</AppText>
+                  </View>
+                  <View style={{ width: 62, height: 52, alignItems: "center", justifyContent: "center" }}>
+                    <AppText style={{ fontSize: 28 }}>🧪</AppText>
+                  </View>
+                </View>
+                <View style={{ backgroundColor: "#FF7E3E", marginLeft: -12, marginRight: -6, paddingVertical: 4, paddingHorizontal: 10, alignItems: "center" }}>
+                  <AppText weight="bold" className="text-[12px] text-white">Buy 1 - Get 1 Free</AppText>
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            {/* Medicines */}
+            <TouchableOpacity
+              onPress={onNavigateToMedicines}
+              activeOpacity={0.9}
+              style={{
+                flex: 1,
+                backgroundColor: "#FF7E3E",
+                borderRadius: 17,
+                padding: 2,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 16,
+                  paddingTop: 6,
+                  paddingLeft: 12,
+                  paddingRight: 6,
+                  paddingBottom: 0,
+                  overflow: "hidden",
+                }}
+              >
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <View style={{ flex: 1 }}>
+                    <AppText weight="bold" className="text-[14px] text-[#1A1A1A]">Medicines</AppText>
+                    <AppText weight="medium" className="text-[11px] text-[#6B7280] mt-1">Fast delivery</AppText>
+                  </View>
+                  <View style={{ width: 62, height: 52, alignItems: "center", justifyContent: "center" }}>
+                    <AppText style={{ fontSize: 28 }}>💊</AppText>
+                  </View>
+                </View>
+                <View style={{ backgroundColor: "#FF7E3E", marginLeft: -12, marginRight: -6, paddingVertical: 4, paddingHorizontal: 10, alignItems: "center" }}>
+                  <AppText weight="bold" className="text-[12px] text-white">Extra Rs.50 OFF</AppText>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
       </View>
 
       {/* Main Tab Screen Body */}
-      <View className="flex-1">{renderTabContent()}</View>
+      <View className="flex-1">
+        {renderTabContent(scrollY)}
+      </View>
 
       {/* Stepped custom bottom navigation bar */}
       <View className="flex-row border-t border-neutral-100 bg-white pt-2.5 pb-2 justify-around items-center">
