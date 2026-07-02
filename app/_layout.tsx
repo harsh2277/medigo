@@ -4,9 +4,15 @@ import { Image, View, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useFonts } from "expo-font";
+import { fontAssets } from "../src/constants/fontAssets";
+import { applyDefaultFont } from "../src/constants/applyDefaultFont";
+
+applyDefaultFont();
 
 export default function RootLayout() {
   const [isSplashReady, setIsSplashReady] = useState(false);
+  const [fontsLoaded] = useFonts(fontAssets);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -14,6 +20,10 @@ export default function RootLayout() {
     }, 2500);
     return () => clearTimeout(timer);
   }, []);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <SafeAreaProvider>
@@ -49,4 +59,3 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 });
-
