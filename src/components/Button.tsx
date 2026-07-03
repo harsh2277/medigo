@@ -6,7 +6,7 @@ export interface ButtonProps extends Omit<PressableProps, 'children'> {
   title?: string;
   variant?: 'primary' | 'secondary' | 'line' | 'ghost' | 'solid' | 'outline' | 'link';
   color?: 'primary' | 'secondary' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'none' | 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -35,11 +35,13 @@ export const Button: React.FC<ButtonProps> = ({
   // Size-specific styles (square/circle aspect ratio for icon-only, standard padding for text buttons)
   const sizeClasses = isIconOnly
     ? {
+        none: '',
         sm: 'w-10 h-10',
         md: 'w-12 h-12',
         lg: 'w-14 h-14',
       }
     : {
+        none: '',
         sm: 'px-4 py-2',
         md: 'px-6 py-3',
         lg: 'px-8 py-4',
